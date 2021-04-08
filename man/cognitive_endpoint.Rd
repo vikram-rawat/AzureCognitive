@@ -38,6 +38,7 @@ Currently, \code{cognitive_endpoint} recognises the following service types:
 \item \code{ContentModerator}: Content moderation (text and images)
 \item \code{Text}: text analytics
 \item \code{TextTranslate}: text translation
+\item \code{SpeechServices}: Speech to text api
 }
 }
 \examples{

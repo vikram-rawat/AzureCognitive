@@ -1,4 +1,6 @@
 #' @import AzureRMR
+#' @import magrittr
+#' @import stringi
 NULL
 
 globalVariables(c("self", "private"))
