@@ -105,7 +105,7 @@ add_methods <- function(){
             properties <- NULL
         }
 
-        AzureCognitive::az_cognitive_service$
+        AzureCognitiveSpeechAPI::az_cognitive_service$
             new(
                 self$token, 
                 self$subscription, 
@@ -125,7 +125,7 @@ add_methods <- function(){
             name =  "get_cognitive_service", 
             overwrite = TRUE,
             value = function(name){
-            AzureCognitive::az_cognitive_service$
+                AzureCognitiveSpeechAPI::az_cognitive_service$
                     new(
                         self$token, 
                         self$subscription, 
@@ -145,7 +145,7 @@ add_methods <- function(){
                 confirm=TRUE, 
                 wait=FALSE
                 ){
-                AzureCognitive::az_cognitive_service$
+                AzureCognitiveSpeechAPI::az_cognitive_service$
                     new(
                         self$token, 
                         self$subscription, 

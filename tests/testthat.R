@@ -1,4 +1,4 @@
 library(testthat)
-library(AzureCognitive)
+library(AzureCognitiveSpeechAPI)
 
-test_check("AzureCognitive")
+test_check("AzureCognitiveSpeechAPI")
