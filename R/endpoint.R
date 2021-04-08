@@ -17,6 +17,7 @@
 #' - `ContentModerator`: Content moderation (text and images)
 #' - `Text`: text analytics
 #' - `TextTranslate`: text translation
+#' - `SpeechServices`: Speech to text api
 #'
 #' @return
 #' An object inheriting from class `cognitive_endpoint`, that can be used to communicate with the REST endpoint. The subclass of the object indicates the type of service provided.
@@ -40,29 +41,34 @@
 #'
 #' }
 #' @export
-cognitive_endpoint <- function(url, service_type, key=NULL, aad_token=NULL, cognitive_token=NULL,
-                               auth_header="ocp-apim-subscription-key")
-{
+cognitive_endpoint <- function(
+    url, 
+    service_type, 
+    key = NULL,
+    aad_token = NULL,
+    cognitive_token = NULL,
+    auth_header = "ocp-apim-subscription-key"
+    ){
+    
     service_type <- normalize_cognitive_type(service_type)
     url <- httr::parse_url(url)
     url$path <- get_api_path(service_type)
 
     object <- list(
-        url=url,
-        key=unname(key),
-        aad_token=aad_token,
-        cognitive_token=cognitive_token,
-        auth_header=auth_header
+        url = url,
+        key = unname(key),
+        aad_token = aad_token,
+        cognitive_token = cognitive_token,
+        auth_header = auth_header
     )
     class(object) <- c(paste0(service_type, "_endpoint"), "cognitive_endpoint")
 
-    object
+    return( object )
 }
 
 
 #' @export
-print.cognitive_endpoint <- function(x, ...)
-{
+print.cognitive_endpoint <- function(x, ...){
     cat("Azure Cognitive Service endpoint\n")
     cat("Service type:", class(x)[1], "\n")
     cat("Endpoint URL:", httr::build_url(x$url), "\n")
@@ -113,135 +119,200 @@ print.cognitive_endpoint <- function(x, ...)
 #'
 #' }
 #' @export
-call_cognitive_endpoint <- function(endpoint, ...)
-{
+call_cognitive_endpoint <- function(endpoint, ...){
     UseMethod("call_cognitive_endpoint")
 }
 
 #' @rdname call_cognitive_endpoint
 #' @export
-call_cognitive_endpoint.cognitive_endpoint <- function(endpoint, operation,
-    options=list(), headers=list(), body=NULL, encode=NULL, ...,
-    http_verb=c("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"),
-    http_status_handler=c("stop", "warn", "message", "pass"))
-{
+call_cognitive_endpoint.cognitive_endpoint <- function(
+    endpoint, 
+    operation,
+    options=list(), 
+    headers=list(), 
+    body=NULL, 
+    encode=NULL,
+    ...,
+    http_verb = c("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"),
+    http_status_handler = c("stop", "warn", "message", "pass")
+    ){
+
     url <- endpoint$url
     url$path <- file.path(url$path, operation)
     url$query <- options
 
-    if(is.null(encode)) # auto-detect from body
-    {
-        if(is.raw(body))
-        {
+    if( is.null(encode) ){
+        # auto-detect from body
+        if( is.raw(body) ){
             encode <- "raw"
             headers$`content-type` <- "application/octet-stream"
-        }
-        else if(!is.null(body))
-        {
+        } else if( !is.null(body) ) {
             body <- jsonlite::toJSON(body, auto_unbox=TRUE, digits=22, null="null")
             encode <- "raw"
             headers$`content-type` <- "application/json"
         }
-    }
-    else if(encode == "json")
-    {
-        # manually convert to json to avoid issues with nulls
-        body <- jsonlite::toJSON(body, auto_unbox=TRUE, digits=22, null="null")
+    } else if( encode == "json" ) {
+        if( class(body) != "json" ) {
+            # manually convert to json to avoid issues with nulls
+            body <- jsonlite::toJSON(
+                body, 
+                auto_unbox = TRUE, 
+                digits = 22, 
+                null = "null"
+            )
+        }
         encode <- "raw"
         headers$`content-type` <- "application/json"
-    }
-    else if(encode == "raw" && is.null(headers$`content-type`))
+    } else if( encode == "raw" && 
+              is.null(headers$`content-type`)
+    ){
         headers$`content-type` <- "application/octet-stream"
+    }
 
-    headers <- add_cognitive_auth(endpoint, headers)
+    headers <- add_cognitive_auth(
+        endpoint = endpoint,
+        headers = headers
+    )
+    
     verb <- match.arg(http_verb)
-    res <- httr::VERB(verb, url, headers, body=body, encode=encode)
 
-    process_cognitive_response(res, match.arg(http_status_handler), ...)
+    res <- httr::VERB(
+        verb = verb,
+        url = url,
+        headers, 
+        body = body,
+        encode = encode,
+        httr::verbose()
+        )
+
+    process_cognitive_response(
+        response = res,
+        handler =  match.arg(http_status_handler),
+        ...
+        )
 }
 
 
-add_cognitive_auth <- function(endpoint, headers, auth_header)
-{
-    if(!is.null(endpoint$key))
-        headers[[endpoint$auth_header]] <- unname(endpoint$key)
-    else if(!is.null(endpoint$aad_token))
-    {
+add_cognitive_auth <- function(endpoint, headers, auth_header){
+    
+    if( !is.null(endpoint$key) ){
+
+        headers[[endpoint$auth_header]] <- unname(endpoint$key[[1]])
+
+    } else if( !is.null(endpoint$aad_token) ){
+        
         token <- endpoint$aad_token
-        if(inherits(token, c("AzureToken", "Token")) && !token$validate())
+        if(inherits(token, c("AzureToken", "Token")) && 
+           !token$validate()){
             token$refresh()
-        headers[["Authorization"]] <- paste("Bearer", AzureAuth::extract_jwt(token))
-    }
-    else if(!is_empty(endpoint$cognitive_token))
-        headers[["Authorization"]] <- paste("Bearer", endpoint$cognitive_token)
-    else stop("No supported authentication method found", call.=FALSE)
+            headers[["Authorization"]] <- paste("Bearer", AzureAuth::extract_jwt(token))
+        }
+    } else if(!is_empty(endpoint$cognitive_token)){
+        
+        headers[["Authorization"]] <- paste("Bearer", endpoint$cognitive_token)   
+        
+    } else {
+        stop("No supported authentication method found", call.=FALSE)  
+    } 
 
     do.call(httr::add_headers, headers)
 }
 
 
-process_cognitive_response <- function(response, handler, ...)
-{
-    if(handler != "pass")
-    {
-        handler <- get(paste0(handler, "_for_status"), getNamespace("httr"))
-        handler(response, paste0("complete Cognitive Services operation. Message:\n",
-                                 sub("\\.$", "", cognitive_error_message(httr::content(response)))))
+process_cognitive_response <- function(response, handler, ...){
+    
+    if( handler != "pass" ){
+        handler <- get(
+            paste0(handler, "_for_status"), 
+            getNamespace("httr")
+            )
+        
+        handler(
+            response, 
+            paste0(
+                "complete Cognitive Services operation. Message:\n",
+                sub("\\.$", "", 
+                    cognitive_error_message(
+                        httr::content(response)
+                        )
+                    )
+                )
+            )
 
         # only return parsed content if json
-        if(is_json_content(httr::headers(response)))
+        if( is_json_content(httr::headers(response)) ){
             httr::content(response, ...)
-        else response$content
+        } else{
+            response$content
+        } 
+    } else {
+        response   
     }
-    else response
 }
 
 
-cognitive_error_message <- function(cont)
-{
-    if(is.raw(cont))
+cognitive_error_message <- function(cont){
+    if(is.raw(cont)){
         cont <- jsonlite::fromJSON(rawToChar(cont))
-    else if(is.character(cont))
+    } else if(is.character(cont)){
         cont <- jsonlite::fromJSON(cont)
-
-    msg <- if(is.list(cont))
-    {
-        if(is.character(cont$message))
-            cont$message
-        else if(is.list(cont$error) && is.character(cont$error$message))
-            cont$error$message
-        else ""
     }
-    else ""
+
+    msg <- if(is.list(cont)) {
+        if(is.character(cont$message)){
+            cont$message
+        } else if(
+            is.list(cont$error) && 
+            is.character(cont$error$message)
+            ){
+            cont$error$message
+        } else {
+            ""
+        }
+    } else{
+        ""
+    } 
 
     paste0(strwrap(msg), collapse="\n")
 }
 
 
-get_api_path <- function(type)
-{
-    switch(type,
-        computervision="vision/v2.0",
-        face="face/v1.0",
-        luis="luis/v2.0",
-        customvision=, customvision_training=, customvision_prediction="customvision/v3.0",
-        contentmoderator="contentmoderator/moderate/v1.0",
-        text="text/analytics/v2.0",
-        cognitiveservices=, texttranslation="",
-        stop("Unknown cognitive service", call.=FALSE)
-    )
+get_api_path <- function(type, url = c(key = NULL)){
+    if( is.null(url) ) {
+        type <- 
+            switch(type,
+                   computervision = "vision/v2.0",
+                   face = "face/v1.0",
+                   luis = "luis/v2.0",
+                   customvision = "", 
+                   customvision_training = "", 
+                   customvision_prediction = "customvision/v3.0",
+                   contentmoderator = "contentmoderator/moderate/v1.0",
+                   text = "text/analytics/v2.0",
+                   cognitiveservices = "",
+                   texttranslation = "",
+                   speechservices = "speechtotext/v3.0"
+            )
+
+        return(type)
+
+    } else {
+        return(url)
+    }
+
 }
 
 
-normalize_cognitive_type <- function(type)
-{
+normalize_cognitive_type <- function(type){
     tolower(gsub("[. ]", "_", type))
 }
 
 
-is_json_content <- function(headers)
-{
-    cont_type <- which(tolower(names(headers)) == "content-type")
-    !is_empty(cont_type) && grepl("json", tolower(headers[[cont_type]]))
+is_json_content <- function(headers){
+    cont_type <- which(
+        tolower(names(headers)) == "content-type"
+        )
+    !is_empty(cont_type) && 
+        grepl("json", tolower(headers[[cont_type]]))
 }
 

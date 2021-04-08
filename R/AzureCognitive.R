@@ -76,43 +76,85 @@ globalVariables(c("self", "private"))
 #'
 #'}
 NULL
+add_methods <- function(){
+    az_resource_group$set(
+        which = "public",
+        name =  "create_cognitive_service",
+        overwrite = TRUE,
+        value = function(
+            name, 
+            service_type, 
+            service_tier, 
+            location = self$location, 
+            subdomain = name, 
+            properties=list(), 
+            ...
+            ){
 
-add_methods <- function()
-{
-    az_resource_group$set("public", "create_cognitive_service", overwrite=TRUE,
-    function(name, service_type, service_tier, location=self$location, subdomain=name, properties=list(), ...)
-    {
-        if(!is.null(subdomain))
-            properties <- utils::modifyList(properties, list(customSubDomainName=subdomain))
+        if( !is.null(subdomain) ){
+            properties <- utils::modifyList(
+                properties, 
+                list(customSubDomainName = subdomain)
+            )
+        }
 
         # resource deployment fails if properties is {}
-        if(is_empty(properties))
+        if( is_empty(properties) ){    
             properties <- NULL
+        }
 
-        AzureCognitive::az_cognitive_service$new(self$token, self$subscription, self$name,
-            type="Microsoft.CognitiveServices/accounts",
-            name=name,
-            location=location,
-            kind=service_type,
-            sku=list(name=service_tier),
-            properties=properties,
-            ...)
+        AzureCognitive::az_cognitive_service$
+            new(
+                self$token, 
+                self$subscription, 
+                self$name,
+                type = "Microsoft.CognitiveServices/accounts",
+                name = name,
+                location = location,
+                kind = service_type,
+                sku = list(name = service_tier),
+                properties = properties,
+                ...)
+        })
+
+    az_resource_group$
+        set(
+            which = "public",
+            name =  "get_cognitive_service", 
+            overwrite = TRUE,
+            value = function(name){
+            AzureCognitive::az_cognitive_service$
+                    new(
+                        self$token, 
+                        self$subscription, 
+                        self$name,
+                        type = "Microsoft.CognitiveServices/accounts",
+                        name = name)
     })
 
-    az_resource_group$set("public", "get_cognitive_service", overwrite=TRUE,
-    function(name)
-    {
-        AzureCognitive::az_cognitive_service$new(self$token, self$subscription, self$name,
-            type="Microsoft.CognitiveServices/accounts",
-            name=name)
-    })
-
-    az_resource_group$set("public", "delete_cognitive_service", overwrite=TRUE,
-    function(name, confirm=TRUE, wait=FALSE)
-    {
-        AzureCognitive::az_cognitive_service$new(self$token, self$subscription, self$name,
-            type="Microsoft.CognitiveServices/accounts",
-            name=name,
-            deployed_properties=list(NULL))$delete(confirm=confirm, wait=wait)
+    az_resource_group$
+        set(
+            which = "public",
+            name = "delete_cognitive_service", 
+            overwrite = TRUE,
+            value = 
+                function(
+                name, 
+                confirm=TRUE, 
+                wait=FALSE
+                ){
+                AzureCognitive::az_cognitive_service$
+                    new(
+                        self$token, 
+                        self$subscription, 
+                        self$name,
+                        type = "Microsoft.CognitiveServices/accounts",
+                        name = name,
+                        deployed_properties = list(NULL)
+                        )$
+                    delete(
+                        confirm = confirm, 
+                        wait = wait
+                        )
     })
 }
