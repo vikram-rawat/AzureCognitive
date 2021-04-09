@@ -7,7 +7,9 @@
 create_transcription_req_body(audio_folder_SAS, diarizationEnabled = FALSE,
   wordLevelTimestampsEnabled = FALSE,
   punctuationMode = "DictatedAndAutomatic", profanityFilterMode = "Masked",
-  locale = "de-AT", displayName = "German Transcription for Austria")
+  locale = "en-US",
+  displayName = "Transcription from azure directly within R programming",
+  ...)
 }
 \arguments{
 \item{audio_folder_SAS}{A URL with Shared access Signature for azure storage Where audio files are stored.}
@@ -21,6 +23,8 @@ create_transcription_req_body(audio_folder_SAS, diarizationEnabled = FALSE,
 \item{locale}{defining language options see speechtotext batch api for more options}
 
 \item{displayName}{displayName is a text that appears with json more like a comment}
+
+\item{...}{pass additional parameter either as a named vector or a named list}
 }
 \value{
 It returns a body that is needed to be sent in the request.

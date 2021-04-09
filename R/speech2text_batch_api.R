@@ -8,6 +8,7 @@
 #' @param profanityFilterMode defining profanityFilterMode options see speechtotext batch api for more options
 #' @param locale defining language options see speechtotext batch api for more options
 #' @param displayName displayName is a text that appears with json more like a comment
+#' @param ... pass additional parameter either as a named vector or a named list
 #' @details
 #' This function creates a body for speech to text api for creating transcription.
 #' @return
@@ -20,8 +21,9 @@ create_transcription_req_body <- function(
   wordLevelTimestampsEnabled = FALSE,
   punctuationMode = "DictatedAndAutomatic",
   profanityFilterMode = "Masked",
-  locale = "de-AT",
-  displayName = "German Transcription for Austria"
+  locale = "en-US",
+  displayName = "Transcription from azure directly within R programming",
+  ...
 ){
   req_body <- list(
     "contentUrls" = I(audio_folder_SAS),
@@ -34,6 +36,10 @@ create_transcription_req_body <- function(
     "locale" = locale,
     "displayName" = displayName
   )
+  
+  if(length(...) >= 1){
+    req_body <- append(req_body, ...)
+  }
   
   req_body <- jsonlite::toJSON(
     req_body,
@@ -162,12 +168,12 @@ get_transcription_status <- function(
 #' @param az_cognitive_service_speechservices_obj an speech service object of class az_cognitive_service
 #' @param create_trans_data the data you get from create_transcription function
 #' @details
-#' This function creates a transcription event in azure and returns you the transcription ID that should be used again.
+#' This function asks for files after transcription event is done running job
 #' @return
-#' It returns a body that is needed to be sent in the request.
+#' It returns the response you get from Transcription files API
 #'
 #' @export
-get_transcription_files <- function(
+get_transcription_files_response <- function(
   az_cognitive_service_speechservices_obj,
   create_transcription_data
 ){
@@ -178,6 +184,7 @@ get_transcription_files <- function(
     create_trans_data$transcription_operation,
     "/files"
   )
+  
   file_url <- call_cognitive_endpoint(
     endpoint = speech$get_endpoint(),
     operation = operation,
@@ -185,12 +192,39 @@ get_transcription_files <- function(
     encode = "json"
   )
 
+  return(file_url)
+
+}
+# get_transcription_files_data --------------------------------------------
+#' Create a transcription by sending audio files.
+#' 
+#' @param transcription_files_response a file url response you get from get_transcription_files_response function
+#' @details
+#' This function gives you the output of all the files
+#' @return
+#' It returns the transcribed files data
+#'
+#' @export
+get_transcription_files_url <- function(
+  transcription_files_response
+){
+  
   file_data <- lapply(file_url$values, function(x){
     x$links$contentUrl %>% 
       httr::GET() %>% 
       httr::content()
   })
   
+  file_data <- lapply(
+    X = file_data,
+    FUN = function(main_file){
+      main_file$combinedRecognizedPhrases %>% 
+        lapply(
+          FUN = function(combinedPhrase){
+          combinedPhrase$display
+        })
+    })
+
   return(file_data)
 
 }
