@@ -37,7 +37,9 @@ create_transcription_req_body <- function(
     "displayName" = displayName
   )
   
-  if(length(...) >= 1){
+  extra_arg <- list(...)
+  
+  if( length(extra_arg) >= 1 ){
     req_body <- append(req_body, ...)
   }
   
