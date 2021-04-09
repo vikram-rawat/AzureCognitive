@@ -219,7 +219,7 @@ get_transcription_files <- function(
       httr::content()
   })
   
-  file_data <- lapply(
+  file_transcription <- lapply(
     X = file_data,
     FUN = function(main_file){
       main_file$combinedRecognizedPhrases %>% 
@@ -229,6 +229,17 @@ get_transcription_files <- function(
         })
     })
 
-  return(file_data)
+  file_name <- lapply(
+    X = file_data,
+    FUN = function(main_file){
+      main_file$source
+    })
+  
+  return(
+    list(
+      file_transcription = file_transcription,
+      file_name = file_name
+    )
+  )
 
 }
