@@ -205,7 +205,7 @@ get_transcription_files_response <- function(
 #' It returns the transcribed files data
 #'
 #' @export
-get_transcription_files_url <- function(
+get_transcription_files <- function(
   transcription_files_response
 ){
   
