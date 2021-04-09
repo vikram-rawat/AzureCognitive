@@ -211,7 +211,9 @@ get_transcription_files <- function(
   transcription_files_response
 ){
   
-  file_data <- lapply(file_url$values, function(x){
+  file_data <- lapply(
+    X = transcription_files_response$values,
+    FUN = function(x){
     x$links$contentUrl %>% 
       httr::GET() %>% 
       httr::content()
