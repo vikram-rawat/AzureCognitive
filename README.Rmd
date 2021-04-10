@@ -128,6 +128,12 @@ if( get_transcription_response$status == "Succeeded" ){
     transcription_files_response = transcription_files_response 
   )
   
+  filenames <- extract_file_name(
+    file_data = get_files_data,
+    start_word = "yourcontainerid",
+    end_word = "yourfiletype"
+  )
+
 }
 ```
 
