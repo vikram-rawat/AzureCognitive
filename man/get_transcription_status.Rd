@@ -2,7 +2,7 @@
 % Please edit documentation in R/speech2text_batch_api.R
 \name{get_transcription_status}
 \alias{get_transcription_status}
-\title{Create a transcription by sending audio files.}
+\title{Get the status of transcription process with this function}
 \usage{
 get_transcription_status(az_cognitive_service_speechservices_obj,
   create_transcription_data)
@@ -16,7 +16,7 @@ get_transcription_status(az_cognitive_service_speechservices_obj,
 It returns the responce from get transcription
 }
 \description{
-Create a transcription by sending audio files.
+Get the status of transcription process with this function
 }
 \details{
 This function tries to get the status of the transcription id

@@ -2,7 +2,7 @@
 % Please edit documentation in R/speech2text_batch_api.R
 \name{get_transcription_files}
 \alias{get_transcription_files}
-\title{Create a transcription by sending audio files.}
+\title{Get all the files which have actual transcription content}
 \usage{
 get_transcription_files(transcription_files_response)
 }
@@ -13,7 +13,7 @@ get_transcription_files(transcription_files_response)
 It returns the transcribed files data
 }
 \description{
-Create a transcription by sending audio files.
+Get all the files which have actual transcription content
 }
 \details{
 This function gives you the output of all the files

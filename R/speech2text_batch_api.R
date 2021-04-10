@@ -138,7 +138,7 @@ create_transcription <- function(
 }
 
 # get transcription status ------------------------------------------------
-#' Create a transcription by sending audio files.
+#' Get the status of transcription process with this function
 #' 
 #' @param az_cognitive_service_speechservices_obj an speech service object of class az_cognitive_service
 #' @param create_trans_data the data you get from create_transcription function
@@ -165,7 +165,7 @@ get_transcription_status <- function(
 }
 
 # get transcription files -------------------------------------------------
-#' Create a transcription by sending audio files.
+#' Get the url and the entire responce from the transcription API
 #' 
 #' @param az_cognitive_service_speechservices_obj an speech service object of class az_cognitive_service
 #' @param create_trans_data the data you get from create_transcription function
@@ -198,7 +198,7 @@ get_transcription_files_response <- function(
 
 }
 # get_transcription_files_data --------------------------------------------
-#' Create a transcription by sending audio files.
+#' Get all the files which have actual transcription content
 #' 
 #' @param transcription_files_response a file url response you get from get_transcription_files_response function
 #' @details
@@ -242,4 +242,34 @@ get_transcription_files <- function(
     )
   )
 
+}
+# extract_file_name from file data ----------------------------------------
+#' Extract name filename from file url string
+#' 
+#' @param transcription_files_response a A string contains the whole url of file that was sent for transcription
+#' @details
+#' Extract file names from file_data obtained from url
+#' @return
+#' It returns the filesnames from string
+#'
+#' @export
+extract_file_name <- function(
+  file_data,
+  start_word,
+  end_word
+){
+  pattern_reg <- sprintf(
+    fmt = "(?<=%s/)(.*)(?=%s)",
+    start_word,
+    end_word
+  )
+  
+  file_name <- stri_extract_all_regex(
+    str = unlist(file_data$file_name),
+    pattern = pattern_reg
+  ) 
+  
+  return(
+    unlist(file_name)    
+  )
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/speech2text_batch_api.R
 \name{get_transcription_files_response}
 \alias{get_transcription_files_response}
-\title{Create a transcription by sending audio files.}
+\title{Get the url and the entire responce from the transcription API}
 \usage{
 get_transcription_files_response(az_cognitive_service_speechservices_obj,
   create_transcription_data)
@@ -16,7 +16,7 @@ get_transcription_files_response(az_cognitive_service_speechservices_obj,
 It returns the response you get from Transcription files API
 }
 \description{
-Create a transcription by sending audio files.
+Get the url and the entire responce from the transcription API
 }
 \details{
 This function asks for files after transcription event is done running job
