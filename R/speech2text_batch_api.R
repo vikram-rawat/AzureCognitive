@@ -183,7 +183,7 @@ get_transcription_files_response <- function(
   speech <- az_cognitive_service_speechservices_obj
   
   operation <- paste0(
-    create_trans_data$transcription_operation,
+    create_transcription_data$transcription_operation,
     "/files"
   )
   
