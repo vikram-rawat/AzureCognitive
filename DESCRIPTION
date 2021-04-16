@@ -1,6 +1,6 @@
 Package: AzureCognitiveSpeechAPI
 Title: Interface to Azure Cognitive Speech Services
-Version: 0.1.100
+Version: 0.1.110
 Authors@R: c(
     person("Hong", "Ooi", , "hongooi73@gmail.com", role = c("aut", "cre")),
     person("Microsoft", role="cph")
