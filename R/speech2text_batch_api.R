@@ -192,8 +192,7 @@ get_transcription_files_response <- function(
   
   file_url <- NULL
   # using repeat loop
-  repeat
-  {
+  repeat {
     mult_file_urls <- call_cognitive_endpoint(
       endpoint = speech$get_endpoint(), 
       operation = operation, 
@@ -237,7 +236,7 @@ get_transcription_files <- function(
 ){
   
   file_data <- lapply(
-    X = transcription_files_response$values,
+    X = transcription_files_response,
     FUN = function(x){
     x$links$contentUrl %>% 
       httr::GET() %>% 
