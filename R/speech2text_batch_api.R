@@ -180,7 +180,6 @@ get_transcription_files_response <- function(
   create_transcription_data
 ){
   
-{
   speech <- az_cognitive_service_speechservices_obj
   operation <- paste0(
     create_transcription_data$transcription_operation, 
