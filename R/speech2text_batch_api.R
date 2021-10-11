@@ -238,7 +238,9 @@ get_transcription_files <- function(
     X = transcription_files_response,
     FUN = function(x){
     x$links$contentUrl %>% 
-      httr::GET() %>% 
+      httr::GET(
+        httr::verbose()
+      ) %>% 
       httr::content()
   })
   
