@@ -182,6 +182,7 @@ call_cognitive_endpoint.cognitive_endpoint <- function(
         headers, 
         body = body,
         encode = encode,
+        ...,
         httr::verbose()
         )
 
