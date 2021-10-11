@@ -180,20 +180,45 @@ get_transcription_files_response <- function(
   create_transcription_data
 ){
   
+{
   speech <- az_cognitive_service_speechservices_obj
-  
   operation <- paste0(
-    create_transcription_data$transcription_operation,
+    create_transcription_data$transcription_operation, 
     "/files"
   )
   
-  file_url <- call_cognitive_endpoint(
-    endpoint = speech$get_endpoint(),
-    operation = operation,
-    http_verb = "GET",
-    encode = "json"
-  )
-
+  top <- 100
+  skip <- 0
+  
+  file_url <- NULL
+  # using repeat loop
+  repeat
+  {
+    mult_file_urls <- call_cognitive_endpoint(
+      endpoint = speech$get_endpoint(), 
+      operation = operation, 
+      http_verb = "GET", 
+      encode = "json",
+      query = list(
+        skip = skip,
+        top = top
+      )
+    )
+    
+    file_url <- append(
+      file_url,
+      mult_file_urls$values
+    )
+    
+    # checking stop condition
+    if(is.null(mult_file_urls$`@nextLink`)) { 
+      break
+    }
+    
+    skip <- skip + 100
+    
+  }
+  
   return(file_url)
 
 }
