@@ -105,21 +105,23 @@ create_transcription <- function(
   punctuationMode = "DictatedAndAutomatic",
   profanityFilterMode = "Masked",
   locale = "de-AT",
-  displayName = "German Transcription for Austria"
+  displayName
   ){
   
   speech <- az_cognitive_service_speechservices_obj
   
   if ( is.null(transcription_body) ) {
+    
     transcription_body <- create_transcription_req_body(
       audio_folder_SAS = audio_folder_SAS,
-      diarizationEnabled = FALSE,
-      wordLevelTimestampsEnabled = FALSE,
-      punctuationMode = "DictatedAndAutomatic",
-      profanityFilterMode = "Masked",
-      locale = "de-AT",
-      displayName = "German Transcription for Austria"
+      diarizationEnabled = diarizationEnabled,
+      wordLevelTimestampsEnabled = wordLevelTimestampsEnabled,
+      punctuationMode = punctuationMode,
+      profanityFilterMode = profanityFilterMode,
+      locale = locale,
+      displayName = displayName
     )
+    
   }
   
   create_transcription_response <- call_cognitive_endpoint(
