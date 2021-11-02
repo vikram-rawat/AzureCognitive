@@ -222,6 +222,7 @@ get_transcription_files_response <- function(
   return(file_url)
 
 }
+
 # get_transcription_files_data --------------------------------------------
 #' Get all the files which have actual transcription content
 #' 
@@ -239,37 +240,63 @@ get_transcription_files <- function(
   file_data <- lapply(
     X = transcription_files_response,
     FUN = function(x){
-    x$links$contentUrl %>% 
+    x$
+      links$
+      contentUrl %>% 
       httr::GET(
         httr::verbose()
       ) %>% 
       httr::content()
   })
   
-  file_transcription <- lapply(
-    X = file_data,
-    FUN = function(main_file){
-      main_file$combinedRecognizedPhrases %>% 
-        lapply(
-          FUN = function(combinedPhrase){
-          combinedPhrase$display
-        })
-    })
+  return( file_data )
 
+}
+
+# extract_transcription_document from get_transcription files result --------------------------------------------
+#' extract_transcription_document from get_transcription files result set this is just a loop on documents
+#' 
+#' @param get_transcription_files_list is a list of the data we get from get_transcription_files function
+#' @details
+#' This function gives you the main transcriptions of all the files
+#' @return
+#' It returns the transcribed files data
+#'
+#' @export
+
+extract_document_transcription <- function(
+  get_transcription_files_list
+){
+  
+  file_transcription <-
+    lapply(
+      X = get_transcription_files_list,
+      FUN = function(main_file) {
+        main_file$
+          combinedRecognizedPhrases %>% 
+          lapply(
+            FUN = function(combinedPhrase) {
+              combinedPhrase$display
+            }
+          )
+      }
+    )
+  
   file_name <- lapply(
-    X = file_data,
-    FUN = function(main_file){
+    X = get_transcription_files_list,
+    FUN = function( main_file ) {
       main_file$source
-    })
+    }
+  )
   
   return(
     list(
-      file_transcription = file_transcription,
+      file_transcription = file_transcription, 
       file_name = file_name
     )
   )
-
 }
+
 # extract_file_name from file data ----------------------------------------
 #' Extract name filename from file url string
 #' 
